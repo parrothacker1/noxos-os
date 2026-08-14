@@ -1,0 +1,24 @@
+name: build
+
+# workflow_dispatch only, on purpose: there is no self-hosted runner
+# registered yet (that happens once the EC2 spot instance is provisioned),
+# so this must never trigger automatically on push/PR - it would just sit
+# queued forever and show up as a broken/stuck check.
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync AOSP source
+        run: infra/sync.sh
+
+      - name: Build Cuttlefish
+        run: infra/build.sh
+
+      # TODO(phase after AWS lands): upload out/dist to S3. Not added yet -
+      # there's no bucket or credentials configured, so a step referencing
+      # AWS secrets here would just be dead code that fails at runtime.

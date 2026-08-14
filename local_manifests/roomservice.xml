@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  local_manifests/roomservice.xml
+
+  This is a `repo` tool local manifest overlay. `infra/sync.sh` copies this
+  file into `.repo/local_manifests/` before running `repo sync`, so anything
+  added here (extra <project> remotes, revision overrides, etc.) gets pulled
+  in alongside the stock AOSP manifest.
+
+  Phase 1 target is an UNMODIFIED Cuttlefish build (aosp_cf_x86_64_phone /
+  aosp_cf_arm64_phone) — no device tree, vendor, or kernel overrides yet, so
+  this file intentionally has no <project> entries.
+
+  This is where NoxOS-specific overrides get added starting Phase 2+:
+    - device/vendor tree projects for GMS-strip work
+    - a kernel tree pinned to a specific revision for kernel-trim work
+    - anything else that needs to replace or augment a stock AOSP project
+
+  See https://source.android.com/docs/setup/create/repo for local manifest
+  syntax.
+-->
+<manifest>
+</manifest>

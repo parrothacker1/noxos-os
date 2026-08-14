@@ -4,4 +4,14 @@ AOSP customization for NoxOS: local manifest, build config patches (GMS/bloat st
 
 Does not contain AOSP source itself — referenced via a `repo` tool local manifest.
 
-Status: Phase 1 (build environment + unmodified Cuttlefish boot) not yet started.
+## Layout
+
+- `local_manifests/roomservice.xml` — `repo` local manifest overlay. Empty for now (Phase 1 builds unmodified Cuttlefish); this is where device/vendor tree and kernel overrides go once GMS-strip and kernel-trim work starts.
+- `infra/setup-instance.sh` — one-time provisioning of a fresh Ubuntu build instance: `repo` tool, JDK, AOSP's documented build-dependency package list.
+- `infra/sync.sh` — `repo init` against AOSP's `android-latest-release` branch, installs the local manifest overlay, `repo sync`.
+- `infra/build.sh` — `lunch`es Cuttlefish (`aosp_cf_x86_64_phone-userdebug` by default, arm64 as an alt target) and runs `m dist`.
+- `.github/workflows/build.yml` — `workflow_dispatch`-only CI job that runs sync + build on a self-hosted runner. Not wired to push/PR yet since no runner is registered.
+
+## Status
+
+Phase 1 (build environment + unmodified Cuttlefish boot): scaffolding in place. Scripts are untested against real AOSP source/build — no AWS instance provisioned yet, that's the next phase. Once that instance exists, `infra/setup-instance.sh` → `infra/sync.sh` → `infra/build.sh` should produce a booting Cuttlefish image.
