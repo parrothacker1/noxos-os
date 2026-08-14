@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# infra/build.sh
+#
+# Builds Cuttlefish. Must run from the AOSP source root after infra/sync.sh
+# has completed. Phase 1 goal is just proving an unmodified Cuttlefish image
+# compiles and boots - no custom lunch target yet.
+
+set -euo pipefail
+
+# x86_64 Cuttlefish is the default target since it's the fastest to build
+# and boot for a first-boot smoke test. Swap to aosp_cf_arm64_phone-userdebug
+# to build the arm64 variant instead.
+LUNCH_TARGET="${LUNCH_TARGET:-aosp_cf_x86_64_phone-userdebug}"
+
+source build/envsetup.sh
+lunch "$LUNCH_TARGET"
+m dist
+
+echo "build.sh: done. dist output under out/dist."
