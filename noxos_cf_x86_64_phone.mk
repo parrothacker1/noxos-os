@@ -18,5 +18,8 @@ PRODUCT_LOCALES := en_US
 PRODUCT_DEX_PREOPT_DEFAULT_COMPILER_FILTER := speed
 
 PRODUCT_COPY_FILES += \
-    device/noxos/cf_x86_64_phone/noxos.rc:$(TARGET_COPY_OUT_SYSTEM)/etc/init/noxos.rc
+    device/noxos/cf_x86_64_phone/noxos.rc:$(TARGET_COPY_OUT_SYSTEM)/etc/init/noxos.rc \
+    device/noxos/cf_x86_64_phone/branding/bootanimation.zip:$(TARGET_COPY_OUT_SYSTEM)/media/bootanimation.zip
+
+DEVICE_PACKAGE_OVERLAYS += device/noxos/cf_x86_64_phone/overlay
 
