@@ -1,0 +1,2 @@
+on boot
+    write /dev/kmsg "noxos_cf_x86_64_phone: lightweight-base init overlay active"
