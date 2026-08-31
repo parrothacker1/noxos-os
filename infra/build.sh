@@ -16,4 +16,12 @@ source build/envsetup.sh
 lunch "$LUNCH_TARGET"
 m dist
 
-echo "build.sh: done. dist output under out/dist."
+S3_BUCKET="${NOXOS_S3_BUCKET:-noxos-releases}"
+S3_PREFIX="full/$(date +%Y%m%d)-${LUNCH_TARGET}"
+
+aws s3 cp out/dist/cvd-host_package.tar.gz "s3://${S3_BUCKET}/${S3_PREFIX}/cvd-host_package.tar.gz"
+for img in out/dist/*-img-*.zip; do
+  aws s3 cp "$img" "s3://${S3_BUCKET}/${S3_PREFIX}/$(basename "$img")"
+done
+
+echo "build.sh: done. dist output under out/dist, uploaded to s3://${S3_BUCKET}/${S3_PREFIX}/"
