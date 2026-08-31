@@ -23,6 +23,8 @@ sudo apt-get install -y \
 # JDK is still needed to run `repo` and assorted host tooling.
 sudo apt-get install -y openjdk-17-jdk
 
+sudo apt-get install -y awscli
+
 # repo tool: Google's documented install (no apt package for this).
 sudo curl -o /usr/local/bin/repo https://storage.googleapis.com/git-repo-downloads/repo
 sudo chmod a+x /usr/local/bin/repo
