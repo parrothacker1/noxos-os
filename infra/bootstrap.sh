@@ -51,12 +51,12 @@ mkdir -p /mnt/aosp
 mount "$DEV" /mnt/aosp || { mkfs.ext4 -F "$DEV"; mount "$DEV" /mnt/aosp; }
 
 git config --global --add safe.directory '*'
-if [ -d /root/noxos-os/.git ]; then
-  git -C /root/noxos-os pull --ff-only
+if [ -d /opt/noxos-os/.git ]; then
+  git -C /opt/noxos-os pull --ff-only
 else
-  git clone --depth 1 https://github.com/parrothacker1/noxos-os.git /root/noxos-os
+  git clone --depth 1 https://github.com/parrothacker1/noxos-os.git /opt/noxos-os
 fi
-bash /root/noxos-os/infra/setup-instance.sh
+bash /opt/noxos-os/infra/setup-instance.sh
 
 cat > /root/watch-interrupt.sh <<EOF
 #!/bin/bash
@@ -86,7 +86,7 @@ export HOME=/root
 chown -R ubuntu:ubuntu /mnt/aosp
 
 set +e
-sudo -u ubuntu -H bash -c "cd /mnt/aosp && bash /root/noxos-os/infra/sync.sh && bash /root/noxos-os/infra/build.sh"
+sudo -u ubuntu -H bash -c "cd /mnt/aosp && bash /opt/noxos-os/infra/sync.sh && bash /opt/noxos-os/infra/build.sh"
 BUILD_EXIT=\$?
 set -e
 
