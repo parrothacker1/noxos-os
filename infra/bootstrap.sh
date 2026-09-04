@@ -84,6 +84,7 @@ export AWS_DEFAULT_REGION="$REGION"
 export HOME=/root
 
 chown -R ubuntu:ubuntu /mnt/aosp
+rm -f /etc/.repo_gitconfig.json
 
 set +e
 sudo -u ubuntu -H bash -c "cd /mnt/aosp && bash /opt/noxos-os/infra/sync.sh && bash /opt/noxos-os/infra/build.sh"
