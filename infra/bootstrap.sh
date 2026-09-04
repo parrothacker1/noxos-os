@@ -50,9 +50,13 @@ DEV="/dev/$(lsblk -dno NAME,TYPE | awk '$2=="disk"{print $1}' | grep -v "^${ROOT
 mkdir -p /mnt/aosp
 mount "$DEV" /mnt/aosp || { mkfs.ext4 -F "$DEV"; mount "$DEV" /mnt/aosp; }
 
-git clone --depth 1 https://github.com/parrothacker1/noxos-os.git /root/noxos-os
-bash /root/noxos-os/infra/setup-instance.sh
 git config --global --add safe.directory '*'
+if [ -d /root/noxos-os/.git ]; then
+  git -C /root/noxos-os pull --ff-only
+else
+  git clone --depth 1 https://github.com/parrothacker1/noxos-os.git /root/noxos-os
+fi
+bash /root/noxos-os/infra/setup-instance.sh
 
 cat > /root/watch-interrupt.sh <<EOF
 #!/bin/bash
