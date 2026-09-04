@@ -1,24 +1,50 @@
 name: build
 
-# workflow_dispatch only, on purpose: there is no self-hosted runner
-# registered yet (that happens once the EC2 spot instance is provisioned),
-# so this must never trigger automatically on push/PR - it would just sit
-# queued forever and show up as a broken/stuck check.
 on:
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
-  build:
-    runs-on: self-hosted
+  launch-fleet:
+    runs-on: ubuntu-latest
+    outputs:
+      fleet_id: ${{ steps.launch.outputs.fleet_id }}
     steps:
       - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GH_ACTIONS_ROLE_ARN }}
+          aws-region: us-east-1
+      - id: launch
+        run: |
+          FLEET_ID=$(aws ec2 create-fleet --cli-input-json file://infra/fleet-config.json --query FleetId --output text)
+          echo "fleet_id=$FLEET_ID" >> "$GITHUB_OUTPUT"
 
-      - name: Sync AOSP source
-        run: infra/sync.sh
-
-      - name: Build Cuttlefish
-        run: infra/build.sh
-
-      # TODO(phase after AWS lands): upload out/dist to S3. Not added yet -
-      # there's no bucket or credentials configured, so a step referencing
-      # AWS secrets here would just be dead code that fails at runtime.
+  watch-build:
+    needs: launch-fleet
+    runs-on: ubuntu-latest
+    timeout-minutes: 600
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GH_ACTIONS_ROLE_ARN }}
+          aws-region: us-east-1
+      - run: |
+          FLEET_ID="${{ needs.launch-fleet.outputs.fleet_id }}"
+          BEFORE=$(aws s3api list-objects-v2 --bucket noxos-releases --prefix cuttlefish-local/ --query 'length(Contents[])' --output text 2>/dev/null || echo 0)
+          while true; do
+            CAP=$(aws ec2 describe-fleets --fleet-ids "$FLEET_ID" --query 'Fleets[0].TargetCapacitySpecification.TotalTargetCapacity' --output text)
+            AFTER=$(aws s3api list-objects-v2 --bucket noxos-releases --prefix cuttlefish-local/ --query 'length(Contents[])' --output text 2>/dev/null || echo 0)
+            if [ "$AFTER" -gt "$BEFORE" ]; then
+              echo "build artifacts uploaded to s3://noxos-releases/cuttlefish-local/"
+              exit 0
+            fi
+            if [ "$CAP" = "0" ]; then
+              echo "fleet scaled to zero without new S3 artifacts - treating as failure"
+              exit 1
+            fi
+            sleep 300
+          done
