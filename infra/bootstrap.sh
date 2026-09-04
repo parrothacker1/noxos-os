@@ -82,11 +82,27 @@ cat > /root/resume-build.sh <<EOF
 exec > /var/log/noxos-build.log 2>&1
 export AWS_DEFAULT_REGION="$REGION"
 export HOME=/root
-trap 'aws s3 cp /var/log/ "s3://$LOG_BUCKET/$LOG_PREFIX/\$(date -u +%Y%m%dT%H%M%SZ)-build/" --recursive --exclude "*" --include "noxos-*.log" 2>/dev/null || true' EXIT
 
-cd /mnt/aosp
-bash /root/noxos-os/infra/sync.sh
-bash /root/noxos-os/infra/build.sh
+chown -R ubuntu:ubuntu /mnt/aosp
+
+set +e
+sudo -u ubuntu -H bash -c "cd /mnt/aosp && bash /root/noxos-os/infra/sync.sh && bash /root/noxos-os/infra/build.sh"
+BUILD_EXIT=\$?
+set -e
+
+echo "=== build.sh exited with code \$BUILD_EXIT ==="
+echo "--- out/dist listing ---"
+ls -la out/dist 2>&1 || echo "(out/dist does not exist)"
+echo "--- out/ top-level listing (mtime order) ---"
+ls -lat out 2>&1 | head -40
+
+aws s3 cp /var/log/ "s3://$LOG_BUCKET/$LOG_PREFIX/\$(date -u +%Y%m%dT%H%M%SZ)-build/" \
+  --recursive --exclude "*" --include "noxos-*.log"
+
+if [ "\$BUILD_EXIT" -ne 0 ]; then
+  echo "build.sh failed - leaving instance up for inspection instead of terminating"
+  exit 0
+fi
 
 FLEET_ID=\$(aws ec2 describe-tags --filters "Name=resource-id,Values=$INSTANCE_ID" "Name=key,Values=aws:ec2:fleet-id" \
   --query 'Tags[0].Value' --output text)
