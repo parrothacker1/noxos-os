@@ -87,8 +87,16 @@ export HOME=/root
 chown -R ubuntu:ubuntu /mnt/aosp
 rm -f /etc/.repo_gitconfig.json
 
+V0_S3_PREFIX="full/\$(date -u +%Y%m%d)-aosp_cf_x86_64_phone"
+if [ -e /mnt/aosp/out/dist/cvd-host_package.tar.gz ]; then
+  aws s3 cp /mnt/aosp/out/dist/cvd-host_package.tar.gz "s3://$LOG_BUCKET/\$V0_S3_PREFIX/cvd-host_package.tar.gz" || true
+  for img in /mnt/aosp/out/dist/*-img-*.zip; do
+    [ -e "\$img" ] && aws s3 cp "\$img" "s3://$LOG_BUCKET/\$V0_S3_PREFIX/\$(basename "\$img")" || true
+  done
+fi
+
 set +e
-sudo -u ubuntu -H bash -c "cd /mnt/aosp && bash /opt/noxos-os/infra/sync.sh && bash /opt/noxos-os/infra/build.sh"
+sudo -u ubuntu -H bash -c "cd /mnt/aosp && bash /opt/noxos-os/infra/sync.sh && LUNCH_TARGET=noxos_cf_x86_64_phone-userdebug bash /opt/noxos-os/infra/build.sh"
 BUILD_EXIT=\$?
 set -e
 
@@ -109,10 +117,11 @@ fi
 FLEET_ID=\$(aws ec2 describe-tags --filters "Name=resource-id,Values=$INSTANCE_ID" "Name=key,Values=aws:ec2:fleet-id" \
   --query 'Tags[0].Value' --output text)
 if [ -n "\$FLEET_ID" ] && [ "\$FLEET_ID" != "None" ]; then
-  aws ec2 modify-fleet --fleet-id "\$FLEET_ID" --target-capacity 0 --no-terminate-instances
+  aws ec2 modify-fleet --fleet-id "\$FLEET_ID" --target-capacity-specification TotalTargetCapacity=0 \
+    --excess-capacity-termination-policy no-termination
 fi
 
-aws ec2 create-snapshot --volume-id "$USE_VOL" --description "noxos-aosp-src build-complete snapshot" \
+aws ec2 create-snapshot --volume-id "$USE_VOL" --description "noxos-aosp-src v1 (noxos_cf_x86_64_phone) build-complete snapshot" \
   --tag-specifications "ResourceType=snapshot,Tags=[{Key=Name,Value=$VOL_TAG_NAME}]"
 
 aws ec2 terminate-instances --instance-ids "$INSTANCE_ID"
