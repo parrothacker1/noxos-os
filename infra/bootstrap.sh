@@ -84,15 +84,17 @@ exec > /var/log/noxos-build.log 2>&1
 export AWS_DEFAULT_REGION="$REGION"
 export HOME=/root
 
-chown -R ubuntu:ubuntu /mnt/aosp
+if [ "\$(stat -c '%U' /mnt/aosp)" != "ubuntu" ]; then
+  chown -R ubuntu:ubuntu /mnt/aosp
+fi
 rm -f /etc/.repo_gitconfig.json
 
-V0_S3_PREFIX="full/\$(date -u +%Y%m%d)-aosp_cf_x86_64_phone"
-if [ -e /mnt/aosp/out/dist/cvd-host_package.tar.gz ]; then
-  aws s3 cp /mnt/aosp/out/dist/cvd-host_package.tar.gz "s3://$LOG_BUCKET/\$V0_S3_PREFIX/cvd-host_package.tar.gz" || true
-  for img in /mnt/aosp/out/dist/*-img-*.zip; do
-    [ -e "\$img" ] && aws s3 cp "\$img" "s3://$LOG_BUCKET/\$V0_S3_PREFIX/\$(basename "\$img")" || true
-  done
+IMG_ZIP=\$(ls /mnt/aosp/out/dist/*-img-*.zip 2>/dev/null | head -1)
+if [ -e /mnt/aosp/out/dist/cvd-host_package.tar.gz ] && [ -n "\$IMG_ZIP" ]; then
+  ORPHAN_PRODUCT=\$(basename "\$IMG_ZIP" | sed -E 's/-img-.*\.zip\$//')
+  ORPHAN_S3_PREFIX="full/\$(date -u +%Y%m%d)-\${ORPHAN_PRODUCT}"
+  aws s3 cp /mnt/aosp/out/dist/cvd-host_package.tar.gz "s3://$LOG_BUCKET/\$ORPHAN_S3_PREFIX/cvd-host_package.tar.gz" || true
+  aws s3 cp "\$IMG_ZIP" "s3://$LOG_BUCKET/\$ORPHAN_S3_PREFIX/\$(basename "\$IMG_ZIP")" || true
 fi
 
 set +e
