@@ -1,4 +1,4 @@
-$(call inherit-product, device/google/cuttlefish/vsoc_x86_64_phone.mk)
+$(call inherit-product, device/google/cuttlefish/vsoc_x86_64/phone/aosp_cf.mk)
 
 PRODUCT_NAME := noxos_cf_x86_64_phone
 PRODUCT_DEVICE := vsoc_x86_64
