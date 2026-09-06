@@ -96,7 +96,7 @@ if [ -e /mnt/aosp/out/dist/cvd-host_package.tar.gz ]; then
 fi
 
 set +e
-sudo -u ubuntu -H bash -c "cd /mnt/aosp && bash /opt/noxos-os/infra/sync.sh && LUNCH_TARGET=noxos_cf_x86_64_phone-userdebug bash /opt/noxos-os/infra/build.sh"
+sudo -u ubuntu -H bash -c "cd /mnt/aosp && bash /opt/noxos-os/infra/sync.sh && LUNCH_TARGET=noxos_cf_x86_64_phone-trunk_staging-userdebug bash /opt/noxos-os/infra/build.sh"
 BUILD_EXIT=\$?
 set -e
 
