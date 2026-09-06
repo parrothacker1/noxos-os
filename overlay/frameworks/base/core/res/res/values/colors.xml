@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="accent_device_default_light">#FF4FD1C5</color>
-    <color name="accent_device_default_dark">#FF4FD1C5</color>
+    <!-- Material You reads the system accent tint from system_accent1_* (13 lightness
+         steps, 0=white to 1000=black), not the old static accent_device_default_*
+         resources - those were removed. This ramp holds our brand teal's hue/saturation
+         (H=174, S=59%) constant across the same lightness steps AOSP's own palette uses;
+         it is a manual HSL approximation, not Google's exact HCT tonal algorithm. -->
+    <color name="system_accent1_0">#FFFFFF</color>
+    <color name="system_accent1_10">#FBFEFE</color>
+    <color name="system_accent1_50">#EBFAF8</color>
+    <color name="system_accent1_100">#D7F5F2</color>
+    <color name="system_accent1_200">#AEEAE4</color>
+    <color name="system_accent1_300">#85E0D7</color>
+    <color name="system_accent1_400">#5DD5C9</color>
+    <color name="system_accent1_500">#34CBBC</color>
+    <color name="system_accent1_600">#2AA296</color>
+    <color name="system_accent1_700">#1F7A71</color>
+    <color name="system_accent1_800">#15514B</color>
+    <color name="system_accent1_900">#0A2826</color>
+    <color name="system_accent1_1000">#000000</color>
 </resources>
