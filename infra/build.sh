@@ -7,6 +7,8 @@
 
 set -euo pipefail
 
+export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
+
 # x86_64 Cuttlefish is the default target since it's the fastest to build
 # and boot for a first-boot smoke test. Swap to aosp_cf_arm64_phone-userdebug
 # to build the arm64 variant instead.
