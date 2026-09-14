@@ -230,7 +230,8 @@ PRODUCT_COPY_FILES += \
 PRODUCT_ARTIFACT_PATH_REQUIREMENT_ALLOWED_LIST += \
     system/etc/init/noxos.rc \
     system/media/bootanimation.zip \
-    system/etc/permissions/privapp-permissions-warden.xml
+    system/etc/permissions/privapp-permissions-warden.xml \
+    system/priv-app/Warden/Warden.apk
 
 DEVICE_PACKAGE_OVERLAYS += device/noxos/cf_x86_64_phone/overlay
 
