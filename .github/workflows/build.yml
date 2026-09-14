@@ -18,6 +18,9 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_GH_ACTIONS_ROLE_ARN }}
           aws-region: us-east-1
+      - run: |
+          aws ssm put-parameter --name /noxos/platform/x509_pem --type SecureString --overwrite --value "$(echo "${{ secrets.NOXOS_PLATFORM_X509_PEM_B64 }}" | base64 -d)"
+          aws ssm put-parameter --name /noxos/platform/pk8_b64 --type SecureString --overwrite --value "${{ secrets.NOXOS_PLATFORM_PK8_B64 }}"
       - id: launch
         run: |
           FLEET_ID=$(aws ec2 create-fleet --cli-input-json file://infra/fleet-config.json --query FleetId --output text)

@@ -12,6 +12,12 @@ set -euo pipefail
 # to build the arm64 variant instead.
 LUNCH_TARGET="${LUNCH_TARGET:-aosp_cf_x86_64_phone-trunk_staging-userdebug}"
 
+PLATFORM_KEYS_DIR="device/noxos/cf_x86_64_phone/keys"
+mkdir -p "$PLATFORM_KEYS_DIR"
+aws ssm get-parameter --name /noxos/platform/x509_pem --with-decryption --query 'Parameter.Value' --output text > "$PLATFORM_KEYS_DIR/platform.x509.pem"
+aws ssm get-parameter --name /noxos/platform/pk8_b64 --with-decryption --query 'Parameter.Value' --output text | base64 -d > "$PLATFORM_KEYS_DIR/platform.pk8"
+chmod 600 "$PLATFORM_KEYS_DIR/platform.x509.pem" "$PLATFORM_KEYS_DIR/platform.pk8"
+
 source build/envsetup.sh
 lunch "$LUNCH_TARGET"
 m dist
