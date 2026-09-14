@@ -18,6 +18,9 @@ aws ssm get-parameter --name /noxos/platform/x509_pem --with-decryption --query 
 aws ssm get-parameter --name /noxos/platform/pk8_b64 --with-decryption --query 'Parameter.Value' --output text | base64 -d > "$PLATFORM_KEYS_DIR/platform.pk8"
 chmod 600 "$PLATFORM_KEYS_DIR/platform.x509.pem" "$PLATFORM_KEYS_DIR/platform.pk8"
 
+curl -sL -o "device/noxos/cf_x86_64_phone/prebuilt/Warden.apk" \
+  "https://github.com/parrothacker1/noxos-app/releases/latest/download/app-release.apk"
+
 source build/envsetup.sh
 lunch "$LUNCH_TARGET"
 m dist

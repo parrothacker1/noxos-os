@@ -224,13 +224,17 @@ PRODUCT_DEX_PREOPT_DEFAULT_COMPILER_FILTER := speed
 
 PRODUCT_COPY_FILES += \
     device/noxos/cf_x86_64_phone/noxos.rc:$(TARGET_COPY_OUT_SYSTEM)/etc/init/noxos.rc \
-    device/noxos/cf_x86_64_phone/branding/bootanimation.zip:$(TARGET_COPY_OUT_SYSTEM)/media/bootanimation.zip
+    device/noxos/cf_x86_64_phone/branding/bootanimation.zip:$(TARGET_COPY_OUT_SYSTEM)/media/bootanimation.zip \
+    device/noxos/cf_x86_64_phone/permissions/privapp-permissions-warden.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/permissions/privapp-permissions-warden.xml
 
 PRODUCT_ARTIFACT_PATH_REQUIREMENT_ALLOWED_LIST += \
     system/etc/init/noxos.rc \
-    system/media/bootanimation.zip
+    system/media/bootanimation.zip \
+    system/etc/permissions/privapp-permissions-warden.xml
 
 DEVICE_PACKAGE_OVERLAYS += device/noxos/cf_x86_64_phone/overlay
 
 PRODUCT_DEFAULT_DEV_CERTIFICATE := device/noxos/cf_x86_64_phone/keys/platform
+
+PRODUCT_PACKAGES += Warden
 
