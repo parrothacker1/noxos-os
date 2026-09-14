@@ -20,7 +20,7 @@ aws ssm get-parameter --name /noxos/platform/x509_pem --with-decryption --query 
 aws ssm get-parameter --name /noxos/platform/pk8_b64 --with-decryption --query 'Parameter.Value' --output text | base64 -d > "$PLATFORM_KEYS_DIR/platform.pk8"
 chmod 600 "$PLATFORM_KEYS_DIR/platform.x509.pem" "$PLATFORM_KEYS_DIR/platform.pk8"
 
-for ROLE in media networkstack sdk_sandbox shared bluetooth nfc; do
+for ROLE in media networkstack sdk_sandbox shared bluetooth nfc testkey cts_uicc_2021; do
   cp "$PLATFORM_KEYS_DIR/platform.x509.pem" "$PLATFORM_KEYS_DIR/$ROLE.x509.pem"
   cp "$PLATFORM_KEYS_DIR/platform.pk8" "$PLATFORM_KEYS_DIR/$ROLE.pk8"
 done
