@@ -2,5 +2,6 @@ android_app_import {
     name: "Warden",
     apk: "Warden.apk",
     presigned: true,
+    preprocessed: true,
     privileged: true,
 }
