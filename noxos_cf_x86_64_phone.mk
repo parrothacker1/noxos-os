@@ -237,5 +237,7 @@ DEVICE_PACKAGE_OVERLAYS += device/noxos/cf_x86_64_phone/overlay
 
 PRODUCT_DEFAULT_DEV_CERTIFICATE := device/noxos/cf_x86_64_phone/keys/platform
 
+PRODUCT_CERTIFICATE_OVERRIDES += CuttlefishService:aosp-testkey
+
 PRODUCT_PACKAGES += Warden
 
