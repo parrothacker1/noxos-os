@@ -30,15 +30,45 @@ jobs:
     needs: launch-fleet
     runs-on: ubuntu-latest
     timeout-minutes: 600
+    permissions:
+      id-token: write
+    env:
+      AWS_REGION: us-east-1
     steps:
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_GH_ACTIONS_ROLE_ARN }}
-          aws-region: us-east-1
       - run: |
           FLEET_ID="${{ needs.launch-fleet.outputs.fleet_id }}"
+          ROLE_ARN="${{ secrets.AWS_GH_ACTIONS_ROLE_ARN }}"
+
+          # aws-actions/configure-aws-credentials only assumes the role once, and
+          # its STS session expires after ~1h - every build here runs longer than
+          # that, so a single long-running poll loop needs to refresh credentials
+          # itself rather than rely on the action's one-shot setup.
+          refresh_creds() {
+            ID_TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+              "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" | jq -r '.value')
+            CREDS=$(aws sts assume-role-with-web-identity \
+              --role-arn "$ROLE_ARN" \
+              --role-session-name "watch-build-$(date +%s)" \
+              --web-identity-token "$ID_TOKEN" \
+              --duration-seconds 3600 \
+              --query 'Credentials' --output json)
+            export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r '.AccessKeyId')
+            export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r '.SecretAccessKey')
+            export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r '.SessionToken')
+            echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> "$GITHUB_ENV"
+            echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> "$GITHUB_ENV"
+            echo "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN" >> "$GITHUB_ENV"
+          }
+
+          refresh_creds
           BEFORE=$(aws s3api list-objects-v2 --bucket noxos-releases --prefix cuttlefish-local/ --query 'length(Contents[])' --output text 2>/dev/null || echo 0)
+          LAST_REFRESH=$(date +%s)
           while true; do
+            NOW=$(date +%s)
+            if [ $((NOW - LAST_REFRESH)) -gt 2700 ]; then
+              refresh_creds
+              LAST_REFRESH=$NOW
+            fi
             CAP=$(aws ec2 describe-fleets --fleet-ids "$FLEET_ID" --query 'Fleets[0].TargetCapacitySpecification.TotalTargetCapacity' --output text)
             AFTER=$(aws s3api list-objects-v2 --bucket noxos-releases --prefix cuttlefish-local/ --query 'length(Contents[])' --output text 2>/dev/null || echo 0)
             if [ "$AFTER" -gt "$BEFORE" ]; then
