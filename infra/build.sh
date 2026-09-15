@@ -20,9 +20,14 @@ aws ssm get-parameter --name /noxos/platform/x509_pem --with-decryption --query 
 aws ssm get-parameter --name /noxos/platform/pk8_b64 --with-decryption --query 'Parameter.Value' --output text | base64 -d > "$PLATFORM_KEYS_DIR/platform.pk8"
 chmod 600 "$PLATFORM_KEYS_DIR/platform.x509.pem" "$PLATFORM_KEYS_DIR/platform.pk8"
 
+AOSP_SECURITY_DIR="build/make/target/product/security"
 for ROLE in media networkstack sdk_sandbox shared bluetooth nfc testkey cts_uicc_2021; do
-  cp "$PLATFORM_KEYS_DIR/platform.x509.pem" "$PLATFORM_KEYS_DIR/$ROLE.x509.pem"
-  cp "$PLATFORM_KEYS_DIR/platform.pk8" "$PLATFORM_KEYS_DIR/$ROLE.pk8"
+  [ -f "$AOSP_SECURITY_DIR/$ROLE.x509.pem" ] && [ -f "$AOSP_SECURITY_DIR/$ROLE.pk8" ] || {
+    echo "build.sh: missing stock AOSP key for role '$ROLE' at $AOSP_SECURITY_DIR" >&2
+    exit 1
+  }
+  cp "$AOSP_SECURITY_DIR/$ROLE.x509.pem" "$PLATFORM_KEYS_DIR/$ROLE.x509.pem"
+  cp "$AOSP_SECURITY_DIR/$ROLE.pk8" "$PLATFORM_KEYS_DIR/$ROLE.pk8"
 done
 
 curl -sL -o "device/noxos/cf_x86_64_phone/prebuilt/Warden.apk" \
